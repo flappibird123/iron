@@ -107,6 +107,7 @@ impl<'a> Lexer<'a> {
                 }
             }
         }    
+        self.tokens.push(Token::new(TokenType::Eof, self.current, 0, self.line, self.column));
         Ok(())
     }
 

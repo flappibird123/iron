@@ -28,3 +28,11 @@ pub enum BinaryOp {
 pub struct Program {
     pub statements: Vec<Stmt>
 }
+
+impl Program {
+    pub fn new() -> Self {
+        Self {
+            statements: Vec::new()
+        }
+    }
+}
