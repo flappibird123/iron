@@ -1,6 +1,6 @@
 use std::{env, fs, io, process};
 use owo_colors::OwoColorize;
-use iron::frontend;
+use iron::frontend::{parser};
 
 fn main() -> Result<(), io::Error> {
     let args: Vec<String> = env::args().collect();
@@ -14,14 +14,26 @@ fn main() -> Result<(), io::Error> {
         process::exit(1);
     }
 
-    let mut lexer = frontend::lexer::Lexer::new(&source);
-    if let Err(e) = lexer.run() {
-        eprintln!("{}", e);
-        process::exit(1);
+    let res = parser::Parser::new(&source);
+    let mut parser;
+    match res {
+        Ok(p) => parser = p,
+        Err(e) => {
+            eprintln!("{}", e);
+            process::exit(1);
+        }
     }
-    let tokens = lexer.tokens;
-    println!("{:?}", tokens); 
 
+    let ast = parser.run();
+    match ast {
+        Ok(program) => {
+            println!("{:?}", program);
+        },
+        Err(msg) => {
+            eprintln!("{}", msg);
+            process::exit(1);
+        }
+    }
     Ok(())
 }
 

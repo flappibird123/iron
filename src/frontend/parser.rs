@@ -50,7 +50,7 @@ impl Parser {
                 let expr = self.parse_expr()?;
 
                 match self.peek() {
-                    Some(t) if t.kind == TokenType::OpenParen => {
+                    Some(t) if t.kind == TokenType::CloseParen => {
                         self.advance();
                         Ok(expr)
                     }
@@ -63,17 +63,22 @@ impl Parser {
     }
 
     fn parse_stmt(&mut self) -> Result<Stmt, String> {
-        match self.peek().ok_or("Unexpected end of input")?.kind {
+        let stmt = match &self.peek().ok_or("Unexpected end of input")?.kind {
             TokenType::Print => {
                 self.advance(); // consume 'print'
-
                 let expr = self.parse_expr()?;
-
-                Ok(Stmt::Print(expr))
+                Stmt::Print(expr)
             }
+            _ => return Err("Expected statement".into()),
+        };
 
-            _ => Err("Expected statement".into()),
+        if let Some(t) = self.peek() {
+            if t.kind == TokenType::Semicolon {
+                self.advance();
+            }
         }
+
+        Ok(stmt)
     }
 
     fn parse_term(&mut self) -> Result<Expr, String> {
