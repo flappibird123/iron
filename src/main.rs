@@ -1,6 +1,7 @@
 use std::{env, fs, io, process};
 use owo_colors::OwoColorize;
 use iron::runtime::vm;
+use iron::frontend::chunk::Chunk;
 
 fn main() -> Result<(), io::Error> {
     let args: Vec<String> = env::args().collect();
@@ -18,7 +19,7 @@ fn main() -> Result<(), io::Error> {
 
     let constants = vec![5, 3];
 
-    let module = vm::Module::new(bytecode, constants);
+    let module = Chunk::new(bytecode, constants);
     let mut vm = vm::VM::new(&module);
     let res = vm.run();
     if res != 0 {

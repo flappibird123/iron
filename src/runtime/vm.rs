@@ -1,29 +1,16 @@
 use super::opcodes::*;
+use crate::frontend::chunk::Chunk;
 use std::convert::TryInto;
 
 pub struct VM<'a> {
     ip: usize,
     stack: Vec<i64>,
-    chunk: &'a Module,
+    chunk: &'a Chunk,
     end: usize,
 }
 
-pub struct Module {
-    pub bytecode: Vec<u8>,
-    pub constants: Vec<i64>,
-}
-
-impl Module {
-    pub fn new(bytecode: Vec<u8>, constants: Vec<i64>) -> Self {
-        Self {
-            bytecode,
-            constants
-        }
-    }
-}
-
 impl<'a> VM<'a> {
-    pub fn new(chunk: &'a Module) -> Self {
+    pub fn new(chunk: &'a Chunk) -> Self {
         Self {
             ip: 0,
             stack: Vec::new(),
