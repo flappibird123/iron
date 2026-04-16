@@ -1,6 +1,6 @@
 use std::{env, fs, io, process};
 use owo_colors::OwoColorize;
-use iron::frontend::{parser};
+use iron::runtime::vm;
 
 fn main() -> Result<(), io::Error> {
     let args: Vec<String> = env::args().collect();
@@ -14,26 +14,17 @@ fn main() -> Result<(), io::Error> {
         process::exit(1);
     }
 
-    let res = parser::Parser::new(&source);
-    let mut parser;
-    match res {
-        Ok(p) => parser = p,
-        Err(e) => {
-            eprintln!("{}", e);
-            process::exit(1);
-        }
-    }
+    let bytecode = vec![5, 0, 5, 1, 2, 0, 6];
 
-    let ast = parser.run();
-    match ast {
-        Ok(program) => {
-            println!("{:?}", program);
-        },
-        Err(msg) => {
-            eprintln!("{}", msg);
-            process::exit(1);
-        }
+    let constants = vec![5, 3];
+
+    let module = vm::Module::new(bytecode, constants);
+    let mut vm = vm::VM::new(&module);
+    let res = vm.run();
+    if res != 0 {
+        process::exit(res);
     }
+    
     Ok(())
 }
 
