@@ -66,7 +66,7 @@ impl Compiler {
     }
 
     fn emit_const(&mut self, constant: i64) {
-        let i = self.bytecode.len();
+        let i = self.constants.len();
         self.constants.push(constant);
         self.emit(OpCode::LoadConst);
         self.bytecode.push(i as u8);

@@ -16,16 +16,23 @@ fn main() -> Result<(), io::Error> {
         process::exit(1);
     }
 
-    let compiler = Compiler::new("print(1 + 2);").unwrap_or_else(|_| panic!("idk wat happened"));
+    let compiler = Compiler::new(&source).unwrap_or_else(|e| {
+        eprintln!("{}", e);
+        process::exit(1);
+    });
     
-    let chunk = compiler.compile().unwrap_or_else(|_| panic!("idk"));
-    println!("{:?}", chunk);
+    let module = compiler.compile().unwrap_or_else(|e| {
+        eprintln!("{}", e);
+        process::exit(1);
+    });
+
+    println!("{:?}", module);
     
-    // let mut vm = vm::VM::new(&module);
-    // let res = vm.run();
-    // if res != 0 {
-    //     process::exit(res);
-    // }
+    let mut vm = vm::VM::new(&module);
+    let res = vm.run();
+    if res != 0 {
+        process::exit(res);
+    }
     
     Ok(())
 }
