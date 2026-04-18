@@ -1,7 +1,6 @@
 use std::{env, fs, io, process};
 use owo_colors::OwoColorize;
 use iron::runtime::vm;
-use iron::frontend::chunk::Chunk;
 use iron::frontend::codegen::Compiler;
 
 fn main() -> Result<(), io::Error> {
