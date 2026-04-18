@@ -2,6 +2,7 @@ use std::{env, fs, io, process};
 use owo_colors::OwoColorize;
 use iron::runtime::vm;
 use iron::frontend::chunk::Chunk;
+use iron::frontend::codegen::Compiler;
 
 fn main() -> Result<(), io::Error> {
     let args: Vec<String> = env::args().collect();
@@ -15,16 +16,16 @@ fn main() -> Result<(), io::Error> {
         process::exit(1);
     }
 
-    let bytecode = vec![5, 0, 5, 1, 2, 0, 6];
-
-    let constants = vec![5, 3];
-
-    let module = Chunk::new(bytecode, constants);
-    let mut vm = vm::VM::new(&module);
-    let res = vm.run();
-    if res != 0 {
-        process::exit(res);
-    }
+    let compiler = Compiler::new("print(1 + 2);").unwrap_or_else(|_| panic!("idk wat happened"));
+    
+    let chunk = compiler.compile().unwrap_or_else(|_| panic!("idk"));
+    println!("{:?}", chunk);
+    
+    // let mut vm = vm::VM::new(&module);
+    // let res = vm.run();
+    // if res != 0 {
+    //     process::exit(res);
+    // }
     
     Ok(())
 }

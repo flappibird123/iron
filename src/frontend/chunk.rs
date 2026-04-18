@@ -1,5 +1,5 @@
 
-
+#[derive(Debug)]
 pub struct Chunk {
     pub bytecode: Vec<u8>,
     pub constants: Vec<i64>,
