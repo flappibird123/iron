@@ -25,8 +25,6 @@ fn main() -> Result<(), io::Error> {
         process::exit(1);
     });
 
-    println!("{:?}", module);
-    
     let mut vm = vm::VM::new(&module);
     let res = vm.run();
     if res != 0 {
