@@ -3,18 +3,20 @@ use super::ast::*;
 use super::token::{Token, TokenType};
 use owo_colors::OwoColorize;
 
-pub struct Parser {
+pub struct Parser<'a> {
     current: usize,
-    tokens: Vec<Token>
+    tokens: Vec<Token>,
+    source: &'a str
 }
 
-impl Parser {
-    pub fn new(source: &str) -> Result<Self, String> {
+impl<'a> Parser<'a> {
+    pub fn new(source: &'a str) -> Result<Self, String> {
         let mut lexer = lexer::Lexer::new(source);
         lexer.run()?;
         Ok(Self {
             tokens: lexer.tokens,
-            current: 0
+            current: 0,
+            source
         })
     }
 
@@ -31,8 +33,8 @@ impl Parser {
         self.tokens.get(self.current)
     }
 
-    fn advance(&mut self) -> Option<&Token> {
-        let tok = self.tokens.get(self.current)?;
+    fn advance(&mut self) -> Option<Token> {
+        let tok = self.tokens.get(self.current)?.clone();
         self.current += 1;
         Some(tok)
     }
@@ -45,7 +47,10 @@ impl Parser {
         let token = self.advance().ok_or("Unexpected EOF")?;
 
         match &token.kind {
-            TokenType::IntegerLiteral(n) => Ok(Expr::IntegerLiteral(*n)),
+            TokenType::Number => {
+                let n = &self.source[token.offset..token.offset + token.length]; 
+                Ok(Expr::IntegerLiteral(n.parse::<i64>().expect("NaN")))
+            },
 
             TokenType::OpenParen => {
                 let expr = self.parse_expr()?;

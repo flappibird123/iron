@@ -103,8 +103,7 @@ impl<'a> Lexer<'a> {
                                 break;
                             }
                         }
-                        let slice = &self.source[self.start..self.current];
-                        self.add_token(TokenType::IntegerLiteral(slice.parse::<i64>().expect("string should be valid i64")));
+                        self.add_token(TokenType::Number);
                     } else {
                         return Err(format!("Unknown character: {}", c));
                     }

@@ -3,14 +3,14 @@ use super::parser::Parser;
 use super::ast::{Stmt, Expr, BinaryOp};
 use crate::runtime::opcodes::OpCode;
 
-pub struct Compiler {
+pub struct Compiler<'a> {
     bytecode: Vec<u8>,
     constants: Vec<i64>,
-    parser: Parser,
+    parser: Parser<'a>,
 }
 
-impl Compiler {
-    pub fn new(source: &str) -> Result<Self, String> {
+impl<'a> Compiler<'a> {
+    pub fn new(source: &'a str) -> Result<Self, String> {
         let parser = Parser::new(source)?; 
         Ok(Self {
             bytecode: Vec::new(),

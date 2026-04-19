@@ -1,7 +1,7 @@
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum TokenType {
-    IntegerLiteral(i64),
+    Number,
 
     // types
     Int,
@@ -28,8 +28,8 @@ pub enum TokenType {
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct Token {
     pub kind: TokenType,
-    offset: usize,
-    length: usize,
+    pub offset: usize,
+    pub length: usize,
     pub line: usize,
     pub column: usize
 }
