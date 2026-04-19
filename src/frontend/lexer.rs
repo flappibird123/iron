@@ -117,6 +117,9 @@ impl<'a> Lexer<'a> {
             "print" => {
                 Some(TokenType::Print)
             },
+            "int" => {
+                Some(TokenType::Int)
+            },
             _ => {
                 None
             }

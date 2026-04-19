@@ -3,6 +3,9 @@
 pub enum TokenType {
     IntegerLiteral(i64),
 
+    // types
+    Int,
+
     Print,
 
     OpenParen,
