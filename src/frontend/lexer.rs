@@ -74,6 +74,10 @@ impl<'a> Lexer<'a> {
                     self.advance();
                     self.add_token(TokenType::Semicolon);
                 },
+                b'=' => {
+                    self.advance();
+                    self.add_token(TokenType::Equal);
+                },
                 _ => {
                     if c.is_ascii_alphabetic() || c == b'_' {
                         self.advance();
@@ -88,7 +92,7 @@ impl<'a> Lexer<'a> {
                         if let Some(kw) = self.check_keyword(slice) {
                             self.add_token(kw);
                         } else {
-                            todo!("Implement identifiers");
+                            self.add_token(TokenType::Identifier);
                         }
                     } else if c.is_ascii_digit() {
                         self.advance();

@@ -8,6 +8,10 @@ pub enum TokenType {
 
     Print,
 
+    Identifier,
+
+    Equal,
+
     OpenParen,
     CloseParen,
 
