@@ -23,8 +23,8 @@ pub struct Token {
     pub kind: TokenType,
     offset: usize,
     length: usize,
-    line: usize,
-    column: usize
+    pub line: usize,
+    pub column: usize
 }
 
 impl Token {

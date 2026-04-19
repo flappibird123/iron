@@ -1,6 +1,7 @@
 use super::lexer;
 use super::ast::*;
 use super::token::{Token, TokenType};
+use owo_colors::OwoColorize;
 
 pub struct Parser {
     current: usize,
@@ -72,9 +73,19 @@ impl Parser {
             _ => return Err("Expected statement".into()),
         };
 
-        if let Some(t) = self.peek() {
-            if t.kind == TokenType::Semicolon {
+        match self.peek() {
+            Some(t) if t.kind == TokenType::Semicolon => {
                 self.advance();
+            }
+            other => {
+                match other {
+                    Some(tok)=> {
+                        return Err(format!("{}:{} {} {}", tok.line + 1, tok.column + 1, "error: ".bright_red().bold(), "Expected ';' after statement"))
+                    },
+                    None => {
+                        return Err("Expected ';' after statement".into());
+                    }
+                }
             }
         }
 
