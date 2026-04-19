@@ -43,7 +43,8 @@ impl<'a> Compiler<'a> {
             Stmt::ExprStmt(expr) => {
                 self.compile_expr(expr);
                 // discard the result
-            }
+            },
+            _ => todo!()
         }
     }
 
@@ -61,7 +62,8 @@ impl<'a> Compiler<'a> {
                     BinaryOp::Mul => self.emit(OpCode::Mul),
                     BinaryOp::Div => self.emit(OpCode::Div),
                 }
-            }
+            },
+            _ => todo!()
         }
     }
 

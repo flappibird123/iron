@@ -4,16 +4,27 @@
 pub enum Stmt {
     Print(Expr),
     ExprStmt(Expr),
+    VarDecl {
+        name: String,
+        ty: Type,
+        value: Expr
+    }
+}
+
+#[derive(Debug)]
+pub enum Type {
+    Int
 }
 
 #[derive(Debug)]
 pub enum Expr {
     IntegerLiteral(i64),
-    Binary{
+    Binary {
         left: Box<Expr>,
         op: BinaryOp,
         right: Box<Expr>
-    }
+    },
+    Identifier(String)
 }
 
 #[derive(Debug)]
