@@ -51,7 +51,10 @@ impl<'a> Parser<'a> {
                 let n = &self.source[token.offset..token.offset + token.length]; 
                 Ok(Expr::IntegerLiteral(n.parse::<i64>().expect("NaN")))
             },
-
+            TokenType::Identifier => {
+                let name = self.source[token.offset..token.offset + token.length].to_string();
+                Ok(Expr::Identifier(name))
+            },
             TokenType::OpenParen => {
                 let expr = self.parse_expr()?;
 
@@ -74,7 +77,10 @@ impl<'a> Parser<'a> {
                 self.advance(); // consume 'print'
                 let expr = self.parse_expr()?;
                 Stmt::Print(expr)
-            }
+            },
+            TokenType::Int => {
+                self.parse_var_decl()?
+            },
             _ => return Err("Expected statement".into()),
         };
 
@@ -85,7 +91,7 @@ impl<'a> Parser<'a> {
             other => {
                 match other {
                     Some(tok)=> {
-                        return Err(format!("{}:{} {} {}", tok.line + 1, tok.column + 1, "error: ".bright_red().bold(), "Expected ';' after statement"))
+                        return Err(self.err(tok, "expected ; after statement"));
                     },
                     None => {
                         return Err("Expected ';' after statement".into());
@@ -159,5 +165,39 @@ impl<'a> Parser<'a> {
         }
 
         Ok(expr)
+    }
+
+    fn parse_var_decl(&mut self) -> Result<Stmt, String> {
+        let tmp = self.advance().ok_or("idk what happened")?;
+        let name_token = self.advance().ok_or(self.err(&tmp, "expected identifier"))?;
+
+        if name_token.kind != TokenType::Identifier {
+            return Err(self.err(&name_token,"expected identifier"));
+        }
+
+        let name = self.source[name_token.offset..name_token.offset + name_token.length].to_string();
+
+        match self.peek() {
+            Some(t) if t.kind == TokenType::Equal => {
+                self.advance();
+            },
+            other => {
+                match other {
+                    Some(t) => return Err(self.err(t, "expected '=' after identifier")),
+                    None => return Err("Unexpected end of input".into())
+                }
+            }
+        }
+
+        let value = self.parse_expr()?;
+        Ok(Stmt::VarDecl {
+            name,
+            ty: Type::Int,
+            value,
+        })
+    }
+
+    fn err(&self, token: &Token, msg: &str) -> String {
+        format!("{}:{} {} {}", token.line + 1, token.column + 1, "error: ".bright_red().bold(), msg)
     }
 }
