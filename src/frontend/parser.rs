@@ -45,7 +45,7 @@ impl Parser {
         let token = self.advance().ok_or("Unexpected EOF")?;
 
         match &token.kind {
-            TokenType::Integer(n) => Ok(Expr::IntegerLiteral(*n)),
+            TokenType::IntegerLiteral(n) => Ok(Expr::IntegerLiteral(*n)),
 
             TokenType::OpenParen => {
                 let expr = self.parse_expr()?;

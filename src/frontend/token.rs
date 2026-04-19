@@ -1,7 +1,7 @@
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub enum TokenType {
-    Integer(i64),
+    IntegerLiteral(i64),
 
     Print,
 
