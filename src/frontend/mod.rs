@@ -4,3 +4,4 @@ pub mod ast;
 pub mod parser;
 pub mod codegen;
 pub mod chunk;
+pub mod sema;
