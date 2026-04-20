@@ -9,38 +9,33 @@ pub struct Lexer<'a> {
     column: usize,
     start_column: usize,
 
-    pub tokens: Vec<Token>
+    pub tokens: Vec<Token>,
 }
 
 impl<'a> Lexer<'a> {
     pub fn new(source: &'a str) -> Self {
         Self {
             source,
-
             current: 0,
             start: 0,
             line: 0,
             column: 0,
             start_column: 0,
-
-            tokens: Vec::new()
+            tokens: Vec::new(),
         }
     }
 
     pub fn run(&mut self) -> Result<(), String> {
         self.reset();
 
-        while let Some(mut c) = self.peek() {
-            loop {
-                if self.skip_whitespace() {
-                    continue;
-                } else if self.skip_comment() {
-                    continue;
-                } else {
-                    break;
-                }
-            }
-            c = self.peek().unwrap();    
+        loop {
+            self.skip_whitespace();
+            self.skip_comment();
+
+            let c = match self.peek() {
+                Some(c) => c,
+                None => break,
+            };
 
             self.start = self.current;
             self.start_column = self.column;
@@ -49,140 +44,153 @@ impl<'a> Lexer<'a> {
                 b'(' => {
                     self.advance();
                     self.add_token(TokenType::OpenParen);
-                },
+                }
                 b')' => {
                     self.advance();
                     self.add_token(TokenType::CloseParen);
-                },
+                }
                 b'+' => {
                     self.advance();
                     self.add_token(TokenType::Plus);
-                },
+                }
                 b'-' => {
                     self.advance();
                     self.add_token(TokenType::Minus);
-                },
+                }
                 b'*' => {
                     self.advance();
                     self.add_token(TokenType::Star);
-                },
+                }
                 b'/' => {
                     self.advance();
                     self.add_token(TokenType::Slash);
-                },
+                }
                 b';' => {
                     self.advance();
                     self.add_token(TokenType::Semicolon);
-                },
+                }
                 b'=' => {
                     self.advance();
                     self.add_token(TokenType::Equal);
-                },
-                _ => {
-                    if c.is_ascii_alphabetic() || c == b'_' {
-                        self.advance();
-                        while let Some(c) = self.peek() {
-                            if c.is_ascii_alphabetic() || c == b'_' {
-                                self.advance();
-                            } else {
-                                break;
-                            }
-                        }
-                        let slice = &self.source[self.start..self.current];
-                        if let Some(kw) = self.check_keyword(slice) {
-                            self.add_token(kw);
-                        } else {
-                            self.add_token(TokenType::Identifier);
-                        }
-                    } else if c.is_ascii_digit() {
-                        self.advance();
-                        while let Some(c) = self.peek() {
-                            if c.is_ascii_digit() {
-                                self.advance();
-                            } else {
-                                break;
-                            }
-                        }
-                        self.add_token(TokenType::Number);
-                    } else {
-                        return Err(format!("Unknown character: {}", c));
-                    }
                 }
-            }
-        }    
-        self.tokens.push(Token::new(TokenType::Eof, self.current, 0, self.line, self.column));
-        Ok(())
-    }
 
-    fn check_keyword(&self, slice: &str) -> Option<TokenType> {
+                _ if c.is_ascii_alphabetic() || c == b'_' => {
+                    self.lex_identifier();
+                }
 
-        match slice {
-            "print" => {
-                Some(TokenType::Print)
-            },
-            "int" => {
-                Some(TokenType::Int)
-            },
-            _ => {
-                None
+                _ if c.is_ascii_digit() => {
+                    self.lex_number();
+                }
+
+                _ => {
+                    return Err(format!("Unknown character: {}", c as char));
+                }
             }
         }
 
+        self.tokens.push(Token::new(
+            TokenType::Eof,
+            self.current,
+            0,
+            self.line,
+            self.column,
+        ));
+
+        Ok(())
+    }
+
+    fn lex_identifier(&mut self) {
+        self.advance();
+
+        while let Some(c) = self.peek() {
+            if c.is_ascii_alphanumeric() || c == b'_' {
+                self.advance();
+            } else {
+                break;
+            }
+        }
+
+        let slice = &self.source[self.start..self.current];
+
+        let kind = self.check_keyword(slice).unwrap_or(TokenType::Identifier);
+        self.add_token(kind);
+    }
+
+    fn lex_number(&mut self) {
+        self.advance();
+
+        while let Some(c) = self.peek() {
+            if c.is_ascii_digit() {
+                self.advance();
+            } else {
+                break;
+            }
+        }
+
+        self.add_token(TokenType::Number);
+    }
+
+    fn check_keyword(&self, slice: &str) -> Option<TokenType> {
+        match slice {
+            "print" => Some(TokenType::Print),
+            "int" => Some(TokenType::Int),
+            _ => None,
+        }
     }
 
     fn add_token(&mut self, kind: TokenType) {
-        self.tokens.push(Token::new(kind, self.start, self.current - self.start, self.line, self.start_column));
+        self.tokens.push(Token::new(
+            kind,
+            self.start,
+            self.current - self.start,
+            self.line,
+            self.start_column,
+        ));
     }
 
-    fn skip_comment(&mut self) -> bool {
-        let mut modified = false;
-        if self.peek().unwrap_or_default() == '/' as u8 && self.peekn(1).unwrap_or_default() == '/' as u8 {
-            modified = true;
+    fn skip_whitespace(&mut self) {
+        while let Some(c) = self.peek() {
+            if !c.is_ascii_whitespace() {
+                break;
+            }
+            self.advance();
+        }
+    }
+
+    fn skip_comment(&mut self) {
+        if self.peek() == Some(b'/') && self.peekn(1) == Some(b'/') {
             self.advance();
             self.advance();
+
             while let Some(c) = self.peek() {
-                if c == '\n' as u8 {
+                if c == b'\n' {
                     break;
                 }
                 self.advance();
             }
         }
-        modified
-    }
-
-    fn skip_whitespace(&mut self) -> bool {
-        let mut modified = false;
-        while let Some(c) = self.peek() { 
-            if !c.is_ascii_whitespace() {
-                break;
-            }
-            self.advance();
-            modified = true;
-        }
-        modified
     }
 
     fn peek(&self) -> Option<u8> {
         self.source.as_bytes().get(self.current).copied()
     }
 
-    fn peekn(&self, index: usize) -> Option<u8> {
-        self.source.as_bytes().get(self.current + index).copied()
+    fn peekn(&self, n: usize) -> Option<u8> {
+        self.source.as_bytes().get(self.current + n).copied()
     }
 
     fn advance(&mut self) -> Option<u8> {
-        if let Some(c) = self.peek() {
-            self.current += 1;
-            if c == '\n' as u8 {
-                self.line += 1;
-                self.column = 0;
-            } else {
-                self.column += 1;
-            }
-            Some(c)
+        let c = self.peek()?;
+        self.current += 1;
+
+        if c == b'\n' {
+            self.line += 1;
+            self.column = 0;
         } else {
-            None
+            self.column += 1;
         }
+
+        Some(c)
     }
 
     fn reset(&mut self) {

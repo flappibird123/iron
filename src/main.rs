@@ -1,10 +1,8 @@
 use std::{env, fs, io, process};
 use owo_colors::OwoColorize;
-// use iron::runtime::vm;
-// use iron::frontend::codegen::Compiler;
+use iron::runtime::vm;
+use iron::frontend::codegen::Compiler;
 
-
-use iron::frontend::lexer::Lexer;
 
 fn main() -> Result<(), io::Error> {
     let args: Vec<String> = env::args().collect();
@@ -18,31 +16,19 @@ fn main() -> Result<(), io::Error> {
         process::exit(1);
     }
 
-    let source = "int x = 5;";
-    let mut lexer = Lexer::new(source);
-    if let Err(e) = lexer.run() {
+
+    let compiler = Compiler::new();
+    
+    let module = compiler.compile(&source).unwrap_or_else(|e| {
         eprintln!("{}", e);
         process::exit(1);
+    });
+
+    let mut vm = vm::VM::new(&module);
+    let res = vm.run();
+    if res != 0 {
+        process::exit(res);
     }
-
-    let tokens = lexer.tokens;
-    println!("{:?}", tokens);
-
-    // let compiler = Compiler::new(&source).unwrap_or_else(|e| {
-    //     eprintln!("{}", e);
-    //     process::exit(1);
-    // });
-    
-    // let module = compiler.compile().unwrap_or_else(|e| {
-    //     eprintln!("{}", e);
-    //     process::exit(1);
-    // });
-
-    // let mut vm = vm::VM::new(&module);
-    // let res = vm.run();
-    // if res != 0 {
-    //     process::exit(res);
-    // }
     
     Ok(())
 }

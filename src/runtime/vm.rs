@@ -6,6 +6,7 @@ pub struct VM<'a> {
     ip: usize,
     stack: Vec<i64>,
     chunk: &'a Chunk,
+    locals: Vec<i64>,
     end: usize,
 }
 
@@ -15,6 +16,7 @@ impl<'a> VM<'a> {
             ip: 0,
             stack: Vec::new(),
             chunk,
+            locals: vec![0; 256],
             end: chunk.bytecode.len()
         }
     }    
@@ -61,6 +63,18 @@ impl<'a> VM<'a> {
                     let val = self.chunk.constants.get(index).unwrap_or_else(|| panic!("invalid constant pool")).clone();
                     self.push(val);
                 },
+                OpCode::StoreLocal => {
+                    let index = self.chunk.bytecode.get(self.ip + 1).unwrap_or_else(|| panic!("missing operand of storelocal")).clone();
+                    self.ip += 1;
+                    let value = self.pop();
+                    self.locals[index as usize] = value;
+                },
+                OpCode::LoadLocal => {
+                    let index = self.chunk.bytecode.get(self.ip + 1).unwrap_or_else(|| panic!("missing operand of storelocal")).clone();
+                    self.ip += 1;
+                    let value = self.locals[index as usize];
+                    self.push(value);
+                }
             }
             self.ip += 1;
         }
@@ -75,7 +89,7 @@ impl<'a> VM<'a> {
         if let Some(v) = self.stack.pop() {
             return v;
         } else {
-            panic!("pop from empty stack");
+            panic!("stack underflow");
         }
     }
 
@@ -92,6 +106,8 @@ impl<'a> VM<'a> {
             0x04 => OpCode::Div,
             0x05 => OpCode::LoadConst,
             0x06 => OpCode::Hlt,
+            0x07 => OpCode::StoreLocal,
+            0x08 => OpCode::LoadLocal,
             _ => panic!("Encountered unknown opcode: {}", byte)
         }
     }

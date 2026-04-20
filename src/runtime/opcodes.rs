@@ -13,4 +13,7 @@ pub enum OpCode {
 
     Hlt = 0x06,
 
+    StoreLocal = 0x07,
+    LoadLocal = 0x08,
+
 }
